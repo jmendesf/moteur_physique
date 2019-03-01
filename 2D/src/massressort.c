@@ -183,12 +183,12 @@ static void init(void)
 	M=tabM;
 	Link* L =tabL;
 	while(L < tabL+10){
-
 		InitRessort(L,M,M+1,k);
 		L++;
 		M++;
 	}
     
+    tabM[1].P.y = -1;
 	/*ICI RUPTURE EQUILIBRE*/
 }
 
@@ -210,8 +210,6 @@ static void anim(void)
 
   while(L<tabL + 10){ L->algo(L); L++;}
   while(M<tabM + 11){ M->setup(M); M++;}
-
-
 }
 
 

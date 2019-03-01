@@ -87,11 +87,11 @@ void AlgoRessort(Link *L){
 	f = L->k * e * (L->M2->P.x - L->M1->P.x);
 
 	L->M1->F.x += f;
-	L->M2->F.x += f;
+	L->M2->F.x -= f;
 
 	f = L->k * e * (L->M2->P.y - L->M1->P.y);
 	L->M1->F.y += f;
-	L->M2->F.y += f;
+	L->M2->F.y -= f;
 
 }
 
@@ -113,16 +113,13 @@ void leapfrog(PMat * M){
 } 
 
 void pointfixe(PMat * M){
-
 	/*M->V.x = M->V.y = 0.;*/
 	/*vidange*/
 	M->F.x = 0.;
 	M->F.y = 0.;
-
 } 
 
 void InitMass(PMat* M, G2Xpoint  P0, G2Xvector V0, double m, double r){
-
 	M->type = MASS;
 	M->m = m;
 	M->ray = r;
@@ -132,12 +129,9 @@ void InitMass(PMat* M, G2Xpoint  P0, G2Xvector V0, double m, double r){
 
 	M->draw = draw_mass;
 	M->setup = leapfrog;
-
-
 }
 
 void InitPFix(PMat* M, G2Xpoint  P0, double r){
-
 	M->type = PFIX;
 	M->m = 0.;
 	M->ray = r;
@@ -147,12 +141,9 @@ void InitPFix(PMat* M, G2Xpoint  P0, double r){
 
 	M->draw = draw_pfix;
 	M->setup = pointfixe;
-
-
 }
 
 void InitRessort(Link * L, PMat *M1, PMat *M2, double k){
-
 	L->M1 =M1;
 	L->M2 =M2;
 	L->k =k;
@@ -160,9 +151,6 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k){
 	L->algo = AlgoRessort;
 	L->type = RESSORT;
 	L->draw = draw_ressort;
-
-
-
 }
 
 /* la fonction d'initialisation */

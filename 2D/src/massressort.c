@@ -12,7 +12,7 @@
 #define PFIX 1
 #define RESSORT 0
 #define FREIN 1
-#define EPSILON 0.002
+#define EPSILON 0.1
 
 typedef struct _PM_ {
 	G2Xpoint  P; /*pos*/
@@ -42,10 +42,12 @@ typedef struct _LN_ {
 PMat tabM[11];
 Link tabL[10];
 /* simulation time step */
-double h =0.001;
+double h = 0.002;
 double m = 1;
-double k = 1000;
 
+double fe = 100;
+/*double k = 0.1 * fe * fe;*/
+double k = 1000;
 
 /* limites de la zone reelle associee a la fenetre */
 double wxmin=-5.5, wymin=-5., wxmax=+5.5, wymax=+5.;
@@ -72,8 +74,28 @@ void draw_ressort(Link * L){
 
 }
 
-void AlgoRessort(Link *L){
+void AlgoRessortFrein(Link *L)
+{
+    double e, f;
+    double d = g2x_Distance(L->M1->P,L->M2->P);
+    
+    /*sécurité division par 0*/
+	if(d< EPSILON){ return;}
+    
+    e = (1 - L->l0 / d);
+    
+	f = L->k * e * (L->M2->P.x - L->M1->P.x) + L->z * (L->M2->V.x - L->M1->V.x);
 
+	L->M1->F.x += f;
+	L->M2->F.x -= f;
+
+	f = L->k * e * (L->M2->P.y - L->M1->P.y) + L->z * (L->M2->V.y - L->M1->V.y);
+	L->M1->F.y += f;
+	L->M2->F.y -= f;
+}
+    
+
+void AlgoRessort(Link *L){
 	double e; /*elongation*/
 	double d; /*distance*/
 	double f; /*intensité de la force*/
@@ -92,7 +114,6 @@ void AlgoRessort(Link *L){
 	f = L->k * e * (L->M2->P.y - L->M1->P.y);
 	L->M1->F.y += f;
 	L->M2->F.y -= f;
-
 }
 
 /*c'est un integrateur parmis d'autres*/
@@ -148,9 +169,10 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k){
 	L->M2 =M2;
 	L->k =k;
 	L->l0 = g2x_Distance(M1->P,M2->P);
-	L->algo = AlgoRessort;
+	L->algo = AlgoRessortFrein;
 	L->type = RESSORT;
 	L->draw = draw_ressort;
+    L->z = 5;
 }
 
 /* la fonction d'initialisation */

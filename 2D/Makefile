@@ -21,7 +21,7 @@ src = src/
 # fichiers *.h locaux et lib.
 inc = -I./include $(incG2X) 
 
-exec = g2x_example oscillator balistic massressort
+exec = g2x_example oscillator balistic massressort massressort_grav 
 
 all : $(exec) clean
 

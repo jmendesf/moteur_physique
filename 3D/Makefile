@@ -6,12 +6,12 @@
 CC = gcc
 
 #compil en mode 'debug' ou optmisée (-O2)
-DBG = no
+DBG = yes
 
 ifeq ($(DBG),yes) #en mode debug
-  CFLAGS = -g -Wpointer-arith -Wall -ansi
+  CFLAGS = -g -Wpointer-arith -Wall -ansi -std=c11
 else              #en mode normal
-  CFLAGS = -O2 -ansi -std=c11
+  CFLAGS = -O2 -ansi -std=c11 -g
 endif
 
 # assemblage des infos de lib. et inc.

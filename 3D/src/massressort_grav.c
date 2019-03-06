@@ -1,10 +1,5 @@
 /*******************************************************************************************/
 #include <g3x.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <math.h>
 
 #define g 9.8
 
@@ -159,7 +154,7 @@ void leapfrog(PMat * M,double h)
 
   /*1ere integration* F->v*/
   M->V[0] += (h/M->m)*M->F[0];
-  M->V[1] += (h/M->m)*M->F[1] -g;
+  M->V[1] += (h/M->m)*(M->F[1] -g);
   M->V[2] += (h/M->m)*M->F[2];
   
   /*2eme integration* v->p*/
@@ -189,9 +184,18 @@ void InitMass(PMat* M, G3Xpoint  P0, G3Xvector V0, double m, double r)
   M->type = MASS;
   M->m = m;
   M->ray = r;
-  M->P = P0;
-  M->V = V0;
-  M->F = (G3Xvector){0.,0.,0.};
+
+  M->P[0] = P0[0];
+  M->P[1] = P0[1];
+  M->P[2] = P0[2];
+
+  M->V[0] = V0[0];
+  M->V[1] = V0[1];
+  M->V[2] = V0[2];
+
+  M->F[0] = 0.;
+  M->F[1] = 0.;
+  M->F[2] = 0.;
 
   //M->draw = draw_mass;
   M->setup = leapfrog;
@@ -205,9 +209,18 @@ void InitPFix(PMat* M, G3Xpoint  P0, double r)
   M->type = PFIX;
   M->m = 0.;
   M->ray = r;
-  M->P = P0;
-  M->V = (G3Xvector){0.,0.,0.};
-  M->F = (G3Xvector){0.,0.,0.};
+
+  M->P[0] = P0[0];
+  M->P[1] = P0[1];
+  M->P[2] = P0[2];
+
+  M->V[0] = 0.;
+  M->V[1] = 0.;
+  M->V[2] = 0.;
+
+  M->F[0] = 0.;
+  M->F[1] = 0.;
+  M->F[2] = 0.;
 
   //M->draw = draw_pfix;
   M->setup = pointfixe;
@@ -302,19 +315,16 @@ int main(int argc, char **argv)
 {
   /* creation de la fenetre - titre et tailles (pixels) */
   g3x_InitWindow(*argv,1024,1024);
-  /* zone graphique reelle associee a la fenetre */	
-  //g3x_SetWindowCoord(wxmin,wymin,wxmax,wymax);
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
   g3x_SetPerspective(40.,100.,1.);
   /* position, orientation de la caméra */
   g3x_SetCameraSpheric(0.25*PI,+0.25*PI,6.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
-  g3x_SetDrawFunction(draw); /* fonction de dessin       */
+  g3x_SetDrawFunction(draw); // fonction de dessin       
+  /*
   g3x_SetAnimFunction(anim); /* fonction d'animation      */
-	
   /* lancement de la boucle principale */
   return g3x_MainStart();
   /* RIEN APRES CA */
-  return 0;
 }

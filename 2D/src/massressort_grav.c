@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 
-#define g 10.0
+#define g 9.8
 
 #define MASS 1
 #define PFIX 1
@@ -14,7 +14,11 @@
 #define FREIN 1
 #define EPSILON 0.002
 
-typedef struct _PM_ {
+#define NB_LINK 9
+#define NB_MASS 10
+
+typedef struct _PM_ 
+{
   G2Xpoint  P; /*pos*/
   G2Xvector V; /*vit*/
   G2Xvector F; /*accumulation force */
@@ -25,7 +29,8 @@ typedef struct _PM_ {
   int type;
 }PMat;
 
-typedef struct _LN_ {
+typedef struct _LN_ 
+{
   double k; /*raideur ressort*/
   double l0; /*longueur initiale*/
   double z; /*coeff d'amortissement cinétique*/
@@ -37,10 +42,12 @@ typedef struct _LN_ {
   int type;
 }Link; 
 
+//int nbMass = 10;
+//int NB_LINK = nbMass - 1;
 
+PMat tabM[NB_MASS];
+Link tabL[NB_LINK];
 
-PMat tabM[11];
-Link tabL[10];
 /* simulation time step */
 double h =0.001;
 double m = 1;
@@ -51,19 +58,22 @@ double k = 100000;
 double wxmin=-5.,wymin=-5.,wxmax=+5.,wymax=+5.;
 
 
-void draw_mass(PMat * M){
+void draw_mass(PMat * M)
+{
 
   g2x_FillCircle(M->P.x,M->P.y,M->ray,G2Xr);
 
 }
 
-void draw_pfix(PMat * M){
+void draw_pfix(PMat * M)
+{
 
   g2x_FillCircle(M->P.x,M->P.y,M->ray,G2Xb);
 
 }
 
-void draw_ressort(Link * L){
+void draw_ressort(Link * L)
+{
   
   G2Xpoint  A = L->M1->P;
   G2Xpoint  B = L->M2->P;
@@ -72,7 +82,8 @@ void draw_ressort(Link * L){
   
 }
 
-void AlgoRessort(Link *L){
+void AlgoRessort(Link *L)
+{
 
   double e; /*elongation*/
   double d; /*distance*/
@@ -100,7 +111,8 @@ void AlgoRessort(Link *L){
 
 }
 
-void AlgoRessortFreint(Link *L){
+void AlgoRessortFreint(Link *L)
+{
 
   double e; /*elongation*/
   double d; /*distance*/
@@ -125,10 +137,12 @@ void AlgoRessortFreint(Link *L){
   
   L->M1->F.y += f;
   L->M2->F.y -= f;
+  
 }
 
 /*c'est un integrateur parmis d'autres*/
-void leapfrog(PMat * M,double h){
+void leapfrog(PMat * M,double h)
+{
 
   /*1ere integration* F->v*/
   M->V.x += (h/M->m)*M->F.x;
@@ -144,7 +158,8 @@ void leapfrog(PMat * M,double h){
 
 } 
 
-void pointfixe(PMat * M){
+void pointfixe(PMat * M, double r)
+{
 
   /*M->V.x = M->V.y = 0.;*/
   /*vidange*/
@@ -153,7 +168,8 @@ void pointfixe(PMat * M){
 
 } 
 
-void InitMass(PMat* M, G2Xpoint  P0, G2Xvector V0, double m, double r){
+void InitMass(PMat* M, G2Xpoint  P0, G2Xvector V0, double m, double r)
+{
 
   M->type = MASS;
   M->m = m;
@@ -168,7 +184,8 @@ void InitMass(PMat* M, G2Xpoint  P0, G2Xvector V0, double m, double r){
 
 }
 
-void InitPFix(PMat* M, G2Xpoint  P0, double r){
+void InitPFix(PMat* M, G2Xpoint  P0, double r)
+{
 
   M->type = PFIX;
   M->m = 0.;
@@ -183,7 +200,8 @@ void InitPFix(PMat* M, G2Xpoint  P0, double r){
 
 }
 
-void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z){
+void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
+{
 
   L->M1 =M1;
   L->M2 =M2;
@@ -193,8 +211,6 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z){
   L->algo = AlgoRessortFreint;
   L->type = RESSORT;
   L->draw = draw_ressort;
-
-
 
 }
 
@@ -206,7 +222,7 @@ static void init(void)
   InitPFix(M,(G2Xpoint){-5,0}, 0.1);
   M++;
 
-  for (i = 1; i< 10; i++){
+  for (i = 1; i< NB_LINK; i++){
     InitMass(M,(G2Xpoint){-5 + i,0}, (G2Xvector){0,0},1, 0.1); /*masse puis ray à la fin*/
     M++;
   }
@@ -215,7 +231,7 @@ static void init(void)
   /*Topologie: liaisons*/
   M=tabM;
   Link* L =tabL;
-  while(L<tabL+10){
+  while(L<tabL+NB_LINK){
 
     InitRessort(L,M,M+1,k,100);
     L++;
@@ -234,12 +250,12 @@ static void draw()
   
   PMat *M = tabM;
   Link *L = tabL;
-  while(M<tabM + 11){
+  while(M<tabM + NB_MASS){
     M->draw(M);
     M++;
   }
   
-  while(L<tabL + 10){
+  while(L<tabL + NB_LINK){
     L->draw(L);
     L++;
   }
@@ -252,12 +268,12 @@ static void anim(void)
 
   
 
-  while(L<tabL + 10){
+  while(L<tabL + NB_LINK){
     L->algo(L);
     L++;
   }
 
-  while(M<tabM + 11){
+  while(M<tabM + NB_MASS){
     M->setup(M,h);
     M++;
   }
@@ -266,7 +282,7 @@ static void anim(void)
 
 
 /***************************************************************************/
-/*                                                                        */
+/*                                                                         */
 /***************************************************************************/
 int main(int argc, char **argv)
 {

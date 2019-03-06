@@ -11,7 +11,7 @@ DBG = no
 ifeq ($(DBG),yes) #en mode debug
   CFLAGS = -g -Wpointer-arith -Wall -ansi
 else              #en mode normal
-  CFLAGS = -O2 -ansi
+  CFLAGS = -O2 -ansi -std=c11
 endif
 
 # assemblage des infos de lib. et inc.

@@ -111,9 +111,6 @@ void AlgoRessort(Link *L)
   f = L->k * e * (L->M2->P[2] - L->M1->P[2]) ;
   L->M1->F[2] += f;
   L->M2->F[2] -= f;
-
-
-
 }
 
 void AlgoRessortFreint(Link *L)
@@ -224,8 +221,6 @@ void InitPFix(PMat* M, G3Xpoint  P0, double r)
 
   //M->draw = draw_pfix;
   M->setup = pointfixe;
-
-
 }
 
 void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
@@ -277,10 +272,10 @@ static void draw()
   
   PMat *M = tabM;
   Link *L = tabL;
-  while(M<tabM + NB_MASS){
-    M->draw(M);
-    M++;
-  }
+ // while(M<tabM + NB_MASS){
+ //   M->draw(M);
+ //   M++;
+  //}
   
   while(L<tabL + NB_LINK){
     L->draw(L);
@@ -321,10 +316,10 @@ int main(int argc, char **argv)
   g3x_SetCameraSpheric(0.25*PI,+0.25*PI,6.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
-  g3x_SetDrawFunction(draw); // fonction de dessin       
-  /*
+  g3x_SetDrawFunction(draw); // fonction de dessin       */
   g3x_SetAnimFunction(anim); /* fonction d'animation      */
   /* lancement de la boucle principale */
   return g3x_MainStart();
+  return 0;
   /* RIEN APRES CA */
 }

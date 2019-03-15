@@ -14,12 +14,12 @@
 // NB_LINK_H_Y must ALWAYS be equal to NB_MASS_Y
 // NB_LINK must ALWAYS be equal to (NB_MASS_X - 1)
 // number of masses in a line
-#define NB_MASS_X 4
+#define NB_MASS_X 11
 // number of horizontal masses
-#define NB_MASS_Y 5
+#define NB_MASS_Y 8
 
 // number of links 
-#define NB_LINK 15	
+#define NB_LINK 150	
 
 
 
@@ -76,7 +76,7 @@ double wxmin=-5., wymin=-5., wxmax=+5., wymax=+5.;
   glColor3d(0,1,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.1,20,50);
+    glutSolidSphere(0.15,20,50);
   glPopMatrix();
  }
 
@@ -241,6 +241,7 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
 static void init(void)
 {
   PMat *M;
+  PMat *MSup;
   int i, j;
   Link *L = tabL;
   for(j = 0; j < NB_MASS_Y; j++){
@@ -254,12 +255,18 @@ static void init(void)
     }
 
     M=tabM[j];
+    if(j > 0) MSup = tabM[j - 1];
     
     for(i = 0; i < NB_MASS_X - 1; i++){
       InitRessort(L,M,M+1,k,90);
-      M++;
       L++;              
-    }              
+      if(j > 0){
+				InitRessort(L, M, MSup, k, 90);
+				MSup++;
+				L++;
+			}
+      M++;
+    }               
   }  
   /*ICI RUPTURE EQUILIBRE*/
 }
@@ -313,7 +320,7 @@ int main(int argc, char **argv)
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
   g3x_SetPerspective(40.,100.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.7*PI,-.75*PI,25.,(G3Xpoint){0.,0.,0.});
+  g3x_SetCameraSpheric(0.7*PI,-.75*PI,40.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
   g3x_SetDrawFunction(draw); // fonction de dessin       */

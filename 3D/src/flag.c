@@ -10,17 +10,18 @@
 #define EPSILON 0.002
 
 // only use in the case of a rectangular flag
-// NB_LINKY must ALWAYS be equal to NB_MASS_Y
-// NB_LINK_X must ALWAYS be equal to (NB_MASS_X - 1)
 
-// number of links in a line
-#define NB_LINK_X 9
-// number of rows of horizontal links
-#define NB_LINK_Y 6
+// NB_LINK_H_Y must ALWAYS be equal to NB_MASS_Y
+// NB_LINK must ALWAYS be equal to (NB_MASS_X - 1)
 // number of masses in a line
-#define NB_MASS_X 10
+#define NB_MASS_X 4
 // number of horizontal masses
-#define NB_MASS_Y 6
+#define NB_MASS_Y 5
+
+// number of links 
+#define NB_LINK 15	
+
+
 
 typedef struct _PM_ 
 {
@@ -48,7 +49,7 @@ typedef struct _LN_
 }Link; 
 
 PMat tabM[NB_MASS_Y][NB_MASS_X];
-Link tabL[NB_LINK_Y][NB_LINK_X];
+Link tabL[NB_LINK];
 
 /* simulation time step */
 double h = 0.0005;
@@ -65,7 +66,7 @@ double wxmin=-5., wymin=-5., wxmax=+5., wymax=+5.;
   glColor3d(1,0,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.1,20,50);
+    glutSolidSphere(0.05,20,50);
   glPopMatrix();
 
  }
@@ -75,7 +76,7 @@ double wxmin=-5., wymin=-5., wxmax=+5., wymax=+5.;
   glColor3d(0,1,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.2,20,50);
+    glutSolidSphere(0.1,20,50);
   glPopMatrix();
  }
 
@@ -182,7 +183,6 @@ void pointfixe(PMat * M, double r)
 
 void InitMass(PMat* M, G3Xpoint  P0, G3Xvector V0, double m, double r)
 {
-
   M->type = MASS;
   M->m = m;
   M->ray = r;
@@ -242,6 +242,7 @@ static void init(void)
 {
   PMat *M;
   int i, j;
+  Link *L = tabL;
   for(j = 0; j < NB_MASS_Y; j++){
     M = tabM[j];
     InitPFix(M,(G3Xpoint){0,-j,0}, 0.1);
@@ -253,8 +254,8 @@ static void init(void)
     }
 
     M=tabM[j];
-    Link *L = tabL[j];
-    for(i = 0; i < NB_LINK_X; i++){
+    
+    for(i = 0; i < NB_MASS_X - 1; i++){
       InitRessort(L,M,M+1,k,90);
       M++;
       L++;              
@@ -266,20 +267,21 @@ static void init(void)
 static void draw()
 { 
   int i, j;
+  Link *L = tabL;
+
   for(j = 0; j < NB_MASS_Y; j++){
 		PMat *M = tabM[j];
-		Link *L = tabL[j];
 					
 		for(i = 0; i < NB_MASS_X; i++){
 			M->draw(M);
 			M++;
 		}
-					
-		for(i = 0; i < NB_LINK_X; i++){
-			L->draw(L);
-			L++;
-		}
 	}     
+	
+	for(i = 0; i < NB_LINK; i++){
+		L->draw(L);
+		L++;
+	}
 }
 
 static void anim(void)
@@ -287,18 +289,17 @@ static void anim(void)
   int i, j;
   for(j = 0; j < NB_MASS_Y; j++){
 		PMat *M = tabM[j];
-		Link *L = tabL[j];
-
-		for(i = 0; i < NB_LINK_X; i++){
-			L->algo(L);
-				L++;          
-			}
 					
-		 for(i = 0; i < NB_MASS_X; i++){
+		for(i = 0; i < NB_MASS_X; i++){
 			 M->setup(M,h);
 			 M++;
-		 }   
- 	}                          
+		}   
+ 	}
+ 	Link *L = tabL;
+  for(i = 0; i < NB_LINK; i++){
+			L->algo(L);
+			L++;          
+	}                     
 }
 
 

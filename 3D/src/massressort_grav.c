@@ -46,7 +46,7 @@ Link tabL[NB_LINK];
 /* simulation time step */
 double h = 0.0005;
 double m = 1;
-double k = 500000;
+double k = 300000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -243,11 +243,11 @@ static void init(void)
 {
 	int i;
 	PMat *M = tabM;
-	InitPFix(M,(G3Xpoint){-5,0,0}, 0.1);
+	InitPFix(M,(G3Xpoint){0,0,0}, 0.1);
 	M++;
 
 	for (i = 1; i< NB_LINK+1; i++){
-		InitMass(M,(G3Xpoint){-5 + i,0,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/
+		InitMass(M,(G3Xpoint){i,0,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/
 		M++;
 	}
 	//InitPFix(M,(G2Xpoint){+5,0}, 0.1);
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
 	/* param. géométrique de la caméra. cf. gluLookAt(...) */
 	g3x_SetPerspective(40.,100.,1.);
 	/* position, orientation de la caméra */
-	g3x_SetCameraSpheric(0.25*PI,+0.25*PI,15.,(G3Xpoint){0.,0.,0.});
+	g3x_SetCameraSpheric(0.7*PI,-.75*PI,25.,(G3Xpoint){0.,0.,0.});
 		
 	g3x_SetInitFunction(init); /* fonction d'initialisation */
 	g3x_SetDrawFunction(draw); // fonction de dessin			 */

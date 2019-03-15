@@ -249,15 +249,10 @@ static void init(void)
 		InitMass(M,(G3Xpoint){i,0,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/
 		M++;
 	}
-	//InitPFix(M,(G2Xpoint){+5,0}, 0.1);
-	/*Topologie: liaisons*/
+
 	M=tabM[0];
 	Link *L = tabL[0];
-	/*while(L<tabL+NB_LINK_Y){
-		InitRessort(L,M,M+1,k,90);
-		L++;
-		M++;
-	}*/
+
 	for(i = 0; i < NB_LINK_X; i++){
                         
 
@@ -288,18 +283,6 @@ static void draw()
                 L->draw(L);
                 L++;
         }
-        
-        /*
-	while(M<tabM + NB_MASS){
-		M->draw(M);
-		M++;
-	}*/
-        
-        /*
-	while(L<tabL + NB_LINK){
-		L->draw(L);
-		L++;
-	}*/
 }
 
 static void anim(void)
@@ -317,17 +300,6 @@ static void anim(void)
                 M->setup(M,h);
                 M++;
         }	
-        /*
-	while(L<tabL + NB_LINK){
-		L->algo(L);
-		L++;
-	}
-
-	 while(M<tabM + NB_MASS){
-		 M->setup(M,h);
-		 M++;
-	 }*/
-
 }
 
 

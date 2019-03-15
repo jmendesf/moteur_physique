@@ -21,7 +21,7 @@ src = src/
 # fichiers *.h locaux et lib.
 inc = -I./include $(incG3X) 
 
-exec = g3x_example g3x_squelette massressort_grav
+exec = g3x_example g3x_squelette massressort_grav flag
 
 all : $(exec) clean
 

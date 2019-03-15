@@ -53,25 +53,27 @@ double k = 100000;
 double wxmin=-5., wymin=-5., wxmax=+5., wymax=+5.;
 
 
-// void draw_mass(PMat * M)
-// {
-//   //g3x_FillCircle(M->P.x,M->P.y,M->ray,G3Xr);
-//   g3x_FillCircle(M->P[0], M->P[1], M->P[2], M->ray, G3Xr);
-// }
+ void draw_mass(PMat * M)
+ {
+	glColor3d(1,0,0); 
+	glPushMatrix();
+		glTranslated(M->P[0], M->P[1], M->P[2]);
+		glutSolidSphere(0.1,20,50);
+	glPopMatrix();
 
-// void draw_pfix(PMat * M)
-// {
-//   g3x_FillCircle(M->P.x,M->P.y,M->ray,G3Xb);
-// }
+ }
+
+ void draw_pfix(PMat * M)
+ {
+	glColor3d(0,1,0); 
+	glPushMatrix();
+		glTranslated(M->P[0], M->P[1], M->P[2]);
+		glutSolidSphere(0.2,20,50);
+	glPopMatrix();
+ }
 
 void draw_ressort(Link * L)
 {
-  
-  // G3Xpoint  A = L->M1->P;
-  // G3Xpoint  B = L->M2->P;
-  
-  //g3x_Line(A.x, A.y,B.x,B.y,G3Xr,1);
-
   glDisable(GL_LIGHTING);
   glBegin(GL_LINES);
     glColor4f(1, 0, 0, 1);
@@ -80,7 +82,6 @@ void draw_ressort(Link * L)
   glEnd();
 
   glEnable(GL_LIGHTING);
-  
 }
 
 void AlgoRessort(Link *L)
@@ -194,7 +195,7 @@ void InitMass(PMat* M, G3Xpoint  P0, G3Xvector V0, double m, double r)
   M->F[1] = 0.;
   M->F[2] = 0.;
 
-  //M->draw = draw_mass;
+  M->draw = draw_mass;
   M->setup = leapfrog;
 
 
@@ -219,7 +220,7 @@ void InitPFix(PMat* M, G3Xpoint  P0, double r)
   M->F[1] = 0.;
   M->F[2] = 0.;
 
-  //M->draw = draw_pfix;
+  M->draw = draw_pfix;
   M->setup = pointfixe;
 }
 
@@ -264,7 +265,6 @@ static void init(void)
   tabM[1].P[1] -= 0.0;
 
   /*ICI RUPTURE EQUILIBRE*/
-
 }
 
 static void draw()
@@ -272,10 +272,10 @@ static void draw()
   
   PMat *M = tabM;
   Link *L = tabL;
- // while(M<tabM + NB_MASS){
- //   M->draw(M);
- //   M++;
-  //}
+  while(M<tabM + NB_MASS){
+    M->draw(M);
+    M++;
+  }
   
   while(L<tabL + NB_LINK){
     L->draw(L);
@@ -295,10 +295,10 @@ static void anim(void)
     L++;
   }
 
-  // while(M<tabM + NB_MASS){
-  //   M->setup(M,h);
-  //   M++;
-  // }
+   while(M<tabM + NB_MASS){
+     M->setup(M,h);
+     M++;
+   }
 
 }
 
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
   g3x_SetPerspective(40.,100.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.25*PI,+0.25*PI,6.,(G3Xpoint){0.,0.,0.});
+  g3x_SetCameraSpheric(-0.25*PI,-0.25*PI,6.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
   g3x_SetDrawFunction(draw); // fonction de dessin       */

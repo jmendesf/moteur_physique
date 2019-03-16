@@ -44,13 +44,26 @@ typedef struct _LN_
   int type;
 }Link; 
 
+typedef struct _WD_
+{
+	G3Xvector F; // strength of the wind
+	G3Xvector incStep; // progressive incrementation of windforce 
+	double maxX; // maximum value for x component
+	double maxZ; // maximum value for z component
+	int nbFrameMax; // number of frames the wind stays at max force
+	int maxReached;
+	int isOver;
+	void (*algoWind)(struct _WD_*);
+}Wind;
+
 PMat tabM[NB_MASS_Y][NB_MASS_X];
 Link tabL[NB_LINK];
+Wind *w;
 
 /* simulation time step */
-double h = 0.0005;
+double h = 0.0003;
 double m = 1;
-double k = 500000;
+double k = 400000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -86,6 +99,52 @@ void draw_ressort(Link * L)
   glEnd();
 
   glEnable(GL_LIGHTING);
+}
+
+void algoWind(Wind *W)
+{
+	// incremental phase
+	if(W->maxReached != 1){
+		// if X component is not maximal, increment it
+		if(W->F[0] < W->maxX)
+			W->F[0] += W->incStep[0];
+			
+		// if Z component is not maximal, increment it
+		if(W->F[2] < W->maxZ)
+			W->F[2] += W->incStep[2];
+			
+		// if max is reached for each component, set maxReached to 1
+		if((W->F[0] >= W->maxX) && (W->F[2] >= W->maxZ))
+			W->maxReached = 1;
+	}
+	
+	// decremental phase
+	if((W->maxReached == 1) && (W->isOver != 1)){
+		// if Wind has not been maximal for enough frames, decrement nbFrameMax
+		if(W->nbFrameMax > 0){
+			W->nbFrameMax--;
+		} else {
+			// if X component is not minimal, decrement it
+			if(W->F[0] > 0)
+				W->F[0] -= W->incStep[0];
+			
+			// if X component is inferior to 0, set it to 0
+			if(W->F[0] < 0)
+				W->F[0] = 0.;
+					
+			// if Z component is not minimal, decrement it
+			if(W->F[2] > 0)
+				W->F[2] -= W->incStep[2];
+				
+			// if Z component is inferior to 0, set it to 0
+			if(W->F[2] < 0)
+				W->F[0] = 0.;
+			
+			// if Z and X component are equal to 0, set isOver to 1
+			if((W->F[0] == 0) && (W->F[2] == 0))
+				W->isOver = 1;	
+		}
+	}
 }
 
 void AlgoRessort(Link *L)
@@ -233,6 +292,25 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
   L->draw = draw_ressort;
 }
 
+void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrameMax)
+{
+	W->F[0] = 0.;
+	W->F[1] = 0.;
+	W->F[2] = 0.;
+	
+	W->incStep[0] = incStep[0];
+	W->incStep[1] = incStep[1];
+	W->incStep[2] = incStep[2];
+	
+	W->maxX = maxX;
+	W->maxZ = maxZ;
+
+	W->nbFrameMax = nbFrameMax;
+	W->maxReached = 0;
+	W->isOver = 0;
+	W->algoWind = algoWind;
+}
+
 /* la fonction d'initialisation */
 static void init(void)
 {
@@ -241,6 +319,8 @@ static void init(void)
   PMat *MInf; // mass directly below
   PMat *M2Inf; // mass below MInf
   Link *L = tabL; // link array
+  w = malloc(sizeof(Wind));
+  InitWind(w, (G3Xvector){200., 0, 300.}, 100000., 100000., 500.);
   
   // keeps track of the number of links
   // delete this on final version
@@ -347,19 +427,24 @@ static void draw()
 static void anim(void)
 { 
   int i, j;
-  for(j = 0; j < NB_MASS_Y; j++){
-		PMat *M = tabM[j];
-					
-		for(i = 0; i < NB_MASS_X; i++){
-			 M->setup(M,h);
-			 M++;
-		}   
- 	}
+  
  	Link *L = tabL;
   for(i = 0; i < NB_LINK; i++){
 			L->algo(L);
 			L++;          
-	}                     
+	}  
+	w->algoWind(w);
+	printf("x : %f, z : %f, nbFrameMax : %d\n", w->F[0], w->F[2], w->nbFrameMax);
+	
+	for(j = 0; j < NB_MASS_Y; j++){
+		PMat *M = tabM[j];
+		for(i = 0; i < NB_MASS_X; i++){
+			M->F[0] += w->F[0];
+			M->F[2] += w->F[2];
+			M->setup(M,h);
+			M++;
+		}   
+ 	}                   
 }
 
 

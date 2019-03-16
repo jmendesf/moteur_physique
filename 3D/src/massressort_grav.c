@@ -37,16 +37,29 @@ typedef struct _LN_
   int type;
 }Link; 
 
+typedef struct _WD_
+{
+	G3Xvector F; // strength of the wind
+	G3Xvector incStep; // progressive incrementation of windforce 
+	double maxX; // maximum value for x component
+	double maxZ; // maximum value for z component
+	int nbFrameMax; // number of frames the wind stays at max force
+	int maxReached;
+	int isOver;
+	void (*algoWind)(struct _WD_*);
+}Wind;
+
 //int nbMass = 10;
 //int NB_LINK = nbMass - 1;
 
 PMat tabM[NB_MASS];
 Link tabL[NB_LINK];
+Wind *w;
 
 /* simulation time step */
 double h = 0.0005;
 double m = 1;
-double k = 300000;
+double k = 500000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -114,9 +127,54 @@ void AlgoRessort(Link *L)
   L->M2->F[2] -= f;
 }
 
+void algoWind(Wind *W)
+{
+	// incremental phase
+	if(W->maxReached != 1){
+		// if X component is not maximal, increment it
+		if(W->F[0] < W->maxX)
+			W->F[0] += W->incStep[0];
+			
+		// if Z component is not maximal, increment it
+		if(W->F[2] < W->maxZ)
+			W->F[2] += W->incStep[2];
+			
+		// if max is reached for each component, set maxReached to 1
+		if((W->F[0] > W->maxX) && (W->F[2] > W->maxZ))
+			W->maxReached = 1;
+	}
+	
+	// decremental phase
+	if((W->maxReached == 1) && (W->isOver != 1)){
+		// if Wind has not been maximal for enough frames, decrement nbFrameMax
+		if(W->nbFrameMax != 0){
+			W->nbFrameMax--;
+		} else {
+			// if X component is not minimal, decrement it
+			if(W->F[0] > 0)
+				W->F[0] -= W->incStep[0];
+			
+			// if X component is inferior to 0, set it to 0
+			if(W->F[0] < 0)
+				W->F[0] = 0.;
+					
+			// if Z component is not minimal, decrement it
+			if(W->F[2] > 0)
+				W->F[2] -= W->incStep[2];
+				
+			// if Z component is inferior to 0, set it to 0
+			if(W->F[2] < 0)
+				W->F[0] = 0.;
+			
+			// if Z and X component are equal to 0, set isOver to 1
+			if((W->F[0] == 0) && (W->F[2] == 0))
+				W->isOver = 1;	
+		}
+	}
+}
+
 void AlgoRessortFreint(Link *L)
 {
-
   double e; /*elongation*/
   double d; /*distance*/
   double f; /*intensité de la force*/
@@ -149,7 +207,6 @@ void AlgoRessortFreint(Link *L)
 /*c'est un integrateur parmis d'autres*/
 void leapfrog(PMat * M,double h)
 {
-
   /*1ere integration* F->v*/
   M->V[0] += (h/M->m)*M->F[0];
   M->V[1] += (h/M->m)*M->F[1] - g;
@@ -178,7 +235,6 @@ void pointfixe(PMat * M, double r)
 
 void InitMass(PMat* M, G3Xpoint  P0, G3Xvector V0, double m, double r)
 {
-
   M->type = MASS;
   M->m = m;
   M->ray = r;
@@ -197,8 +253,6 @@ void InitMass(PMat* M, G3Xpoint  P0, G3Xvector V0, double m, double r)
 
   M->draw = draw_mass;
   M->setup = leapfrog;
-
-
 }
 
 void InitPFix(PMat* M, G3Xpoint  P0, double r)
@@ -226,7 +280,6 @@ void InitPFix(PMat* M, G3Xpoint  P0, double r)
 
 void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
 {
-
   L->M1 =M1;
   L->M2 =M2;
   L->k =k;
@@ -235,7 +288,25 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
   L->algo = AlgoRessortFreint;
   L->type = RESSORT;
   L->draw = draw_ressort;
+}
 
+void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrameMax)
+{
+	W->F[0] = 0.;
+	W->F[1] = 0.;
+	W->F[2] = 0.;
+	
+	W->incStep[0] = incStep[0];
+	W->incStep[1] = incStep[1];
+	W->incStep[2] = incStep[2];
+	
+	W->maxX = maxX;
+	W->maxZ = maxZ;
+
+	W->nbFrameMax = nbFrameMax;
+	W->maxReached = 0;
+	W->isOver = 0;
+	W->algoWind = algoWind;
 }
 
 /* la fonction d'initialisation */
@@ -245,7 +316,9 @@ static void init(void)
   PMat *M = tabM;
   InitPFix(M,(G3Xpoint){0,0,0}, 0.1);
   M++;
-
+	w = malloc(sizeof(Wind));
+  InitWind(w, (G3Xvector){0.3, 0, 0.3}, 120., 120., 1000.);
+	
   for (i = 1; i< NB_LINK+1; i++){
     InitMass(M,(G3Xpoint){i,0,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/
     M++;
@@ -288,18 +361,21 @@ static void anim(void)
   PMat *M = tabM;
   Link *L = tabL;
 
-    
-
   while(L<tabL + NB_LINK){
     L->algo(L);
     L++;
   }
+  
+  if(w->F[0] > 0.)
+  	printf("%f\n", w->F[0]);
+  w->algoWind(w);
 
-   while(M<tabM + NB_MASS){
-     M->setup(M,h);
-     M++;
-   }
-
+  while(M<tabM + NB_MASS){
+		M->F[0] += w->F[0];
+		M->F[2] += w->F[2];
+    M->setup(M,h);
+    M++;
+  }
 }
 
 

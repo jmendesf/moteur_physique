@@ -50,7 +50,7 @@ Link tabL[NB_LINK];
 /* simulation time step */
 double h = 0.0005;
 double m = 1;
-double k = 300000;
+double k = 500000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -236,19 +236,25 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
 /* la fonction d'initialisation */
 static void init(void)
 {
-  PMat *M;
-  PMat *MSup;
-  PMat *MInf;
-  PMat *M2Inf;
+  PMat *M; // current mass
+  PMat *MSup; // mass directly above
+  PMat *MInf; // mass directly below
+  PMat *M2Inf; // mass below MInf
+  Link *L = tabL; // link array
   
+  // keeps track of the number of links
+  // delete this on final version
   int nbLink = 0;
   int i, j;
-  Link *L = tabL;
+  
   for(j = 0; j < NB_MASS_Y; j++){
     M = tabM[j];
     InitPFix(M,(G3Xpoint){0,-j,0}, 0.1);
     M++;
-
+    
+    // allows rigidity to be superior on the springs closer to the base
+    // than those at the end of the flag
+		double kCoeff = 1.; 
     for (i = 1; i< NB_MASS_X; i++){
       InitMass(M,(G3Xpoint){i,-j,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/
       M++;
@@ -260,15 +266,21 @@ static void init(void)
     if(j < NB_MASS_Y - 2) M2Inf = tabM[j + 2];
     
     for(i = 0; i < NB_MASS_X - 1; i++){
-      InitRessort(L,M,M+1,k,90);
+			// horizontal springs
+      InitRessort(L,M,M+1,k / kCoeff,90);
+      k += 0.1;
       L++;  
-      nbLink++;            
+
+      nbLink++;
+      
+      // vertical springs         
       if(j > 0){
 				InitRessort(L, M, MSup, k, 90);
 				L++;
 				nbLink++;
 			}
 			
+			// diagonal springs
 			if(i < NB_MASS_X - 1){
 				if(j > 0){
 					InitRessort(L, M, MSup + 1, k/30, 90);
@@ -281,19 +293,21 @@ static void init(void)
 					nbLink++;
 				}
 			}
-			
+			// last vertical springs
 			if((i == NB_MASS_X - 2) && (j > 0)){
 				InitRessort(L, M + 1, MSup +1, k, 90);
 				L++;
 				nbLink++;
 			}
 			
+			// horizontal tensor springs
 			if(i < NB_MASS_X - 2){
 				InitRessort(L, M, M + 2, k/30, 90);
 				L++;
 				nbLink++;
 			}
 			
+			// vertical tensor springs
 			if(j < NB_MASS_Y - 2){
 				InitRessort(L, M, M2Inf, k/30, 90);
 				L++;

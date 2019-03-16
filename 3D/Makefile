@@ -6,12 +6,12 @@
 CC = gcc
 
 #compil en mode 'debug' ou optmisée (-O2)
-DBG = yes
+DBG = no
 
 ifeq ($(DBG),yes) #en mode debug
   CFLAGS = -g -Wpointer-arith -Wall -ansi -std=c11
 else              #en mode normal
-  CFLAGS = -O2 -ansi -std=c11 -g
+  CFLAGS = -O3 -ansi -std=c11 -g
 endif
 
 # assemblage des infos de lib. et inc.
@@ -21,7 +21,7 @@ src = src/
 # fichiers *.h locaux et lib.
 inc = -I./include $(incG3X) 
 
-exec = g3x_example g3x_squelette massressort_grav flag
+exec = g3x_example g3x_squelette massressort_grav flag heavy_flag
 
 all : $(exec) clean
 

@@ -317,7 +317,7 @@ static void init(void)
   InitPFix(M,(G3Xpoint){0,0,0}, 0.1);
   M++;
 	w = malloc(sizeof(Wind));
-  InitWind(w, (G3Xvector){0.3, 0, 0.3}, 120., 120., 1000.);
+  InitWind(w, (G3Xvector){0.3, 0, 0.3}, 120., 120., 1000);
 	
   for (i = 1; i< NB_LINK+1; i++){
     InitMass(M,(G3Xpoint){i,0,0}, (G3Xvector){0,0,0},1, 0.1); /*masse puis ray à la fin*/

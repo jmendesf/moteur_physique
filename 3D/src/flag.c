@@ -1,4 +1,5 @@
 /*******************************************************************************************/
+#include <time.h>
 #include <g3x.h>
 
 #define g 9.8
@@ -17,7 +18,6 @@
 
 // total number of links 
 #define NB_LINK 659	
-
 
 typedef struct _PM_ 
 {
@@ -51,6 +51,7 @@ typedef struct _WD_
 	double maxX; // maximum value for x component
 	double maxZ; // maximum value for z component
 	int nbFrameMax; // number of frames the wind stays at max force
+	int nbFrameOver; // number of frames the wind stays inactive
 	int maxReached;
 	int isOver;
 	void (*algoWind)(struct _WD_*);
@@ -59,16 +60,18 @@ typedef struct _WD_
 PMat tabM[NB_MASS_Y][NB_MASS_X];
 Link tabL[NB_LINK];
 Wind *w;
+Wind *w2;
 
 /* simulation time step */
-double h = 0.0003;
+double h = 0.0004;
 double m = 1;
-double k = 400000;
+double k = 900000;
 
 
 /* limites de la zone reelle associee a la fenetre */
 double wxmin=-5., wymin=-5., wxmax=+5., wymax=+5.;
 
+void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrameMax, int nbFrameOver);
 
  void draw_mass(PMat * M)
  {
@@ -100,6 +103,7 @@ void draw_ressort(Link * L)
 
   glEnable(GL_LIGHTING);
 }
+
 
 void algoWind(Wind *W)
 {
@@ -144,6 +148,16 @@ void algoWind(Wind *W)
 			if((W->F[0] == 0) && (W->F[2] == 0))
 				W->isOver = 1;	
 		}
+	}
+	
+	if((W->isOver == 1) && W->nbFrameOver != 0){
+		W->nbFrameOver--;
+	} else if(W->isOver == 1){
+		double randX = (rand() % 500) + 150;
+		double randZ = (rand() % 500) + 150;
+		
+		InitWind(W, (G3Xvector){randX , 0., randZ}, 
+		(rand() % 50000) + 50000, (rand() % 100000) + 50000, (rand() % 300) + 50, (rand() % 500) + 200);
 	}
 }
 
@@ -292,7 +306,7 @@ void InitRessort(Link * L, PMat *M1, PMat *M2, double k,double z)
   L->draw = draw_ressort;
 }
 
-void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrameMax)
+void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrameMax, int nbFrameOver)
 {
 	W->F[0] = 0.;
 	W->F[1] = 0.;
@@ -306,6 +320,7 @@ void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrame
 	W->maxZ = maxZ;
 
 	W->nbFrameMax = nbFrameMax;
+	W->nbFrameOver = nbFrameOver;
 	W->maxReached = 0;
 	W->isOver = 0;
 	W->algoWind = algoWind;
@@ -319,12 +334,13 @@ static void init(void)
   PMat *MInf; // mass directly below
   PMat *M2Inf; // mass below MInf
   Link *L = tabL; // link array
-  w = malloc(sizeof(Wind));
-  InitWind(w, (G3Xvector){200., 0, 300.}, 100000., 100000., 500.);
   
-  // keeps track of the number of links
-  // delete this on final version
-  int nbLink = 0;
+  w = malloc(sizeof(Wind));
+  // w2 = malloc(sizeof(Wind));
+  
+  InitWind(w, (G3Xvector){300., 0, 500.}, 10000., 10000., 300., 200);
+  // InitWind(w2, (G3Xvector){250., 0, 400.}, 10000., 100000., 1000., 100);
+  
   int i, j;
   
   for(j = 0; j < NB_MASS_Y; j++){
@@ -347,51 +363,43 @@ static void init(void)
     
     for(i = 0; i < NB_MASS_X - 1; i++){
 			// horizontal springs
-      InitRessort(L,M,M+1,k / kCoeff,90);
-      k += 0.1;
+      InitRessort(L,M,M+1,k / kCoeff,15);
+      k += 5.;
       L++;  
-
-      nbLink++;
       
       // vertical springs         
       if(j > 0){
-				InitRessort(L, M, MSup, k, 90);
+				InitRessort(L, M, MSup, k, 15);
 				L++;
-				nbLink++;
 			}
 			
 			// diagonal springs
 			if(i < NB_MASS_X - 1){
 				if(j > 0){
-					InitRessort(L, M, MSup + 1, k/30, 90);
+					InitRessort(L, M, MSup + 1, k/150, 15);
 					L++;
-					nbLink++;
 				}
 				if(j < NB_MASS_Y - 1){
-					InitRessort(L, M, MInf + 1, k/30, 90);
+					InitRessort(L, M, MInf + 1, k/150, 15);
 					L++;
-					nbLink++;
 				}
 			}
 			// last vertical springs
 			if((i == NB_MASS_X - 2) && (j > 0)){
-				InitRessort(L, M + 1, MSup +1, k, 90);
+				InitRessort(L, M + 1, MSup +1, k, 15);
 				L++;
-				nbLink++;
 			}
 			
 			// horizontal tensor springs
 			if(i < NB_MASS_X - 2){
-				InitRessort(L, M, M + 2, k/30, 90);
+				InitRessort(L, M, M + 2, k/30, 15);
 				L++;
-				nbLink++;
 			}
 			
 			// vertical tensor springs
 			if(j < NB_MASS_Y - 2){
-				InitRessort(L, M, M2Inf, k/30, 90);
+				InitRessort(L, M, M2Inf, k/30, 15);
 				L++;
-				nbLink++;
 			}
 		
 			//printf("%d\n", nbLink);
@@ -434,13 +442,16 @@ static void anim(void)
 			L++;          
 	}  
 	w->algoWind(w);
-	printf("x : %f, z : %f, nbFrameMax : %d\n", w->F[0], w->F[2], w->nbFrameMax);
+	// w->algoWind(w2);
+	printf("x : %f, z : %f, nbFrameMax : %d, nbFrameOver : %d \n", w->F[0], w->F[2], w->nbFrameMax, w->nbFrameOver);
 	
 	for(j = 0; j < NB_MASS_Y; j++){
 		PMat *M = tabM[j];
 		for(i = 0; i < NB_MASS_X; i++){
 			M->F[0] += w->F[0];
 			M->F[2] += w->F[2];
+			// M->F[0] += w2->F[0];
+			// M->F[2] += w2->F[2];
 			M->setup(M,h);
 			M++;
 		}   
@@ -453,12 +464,13 @@ static void anim(void)
 /***************************************************************************/
 int main(int argc, char **argv)
 {
+	srand(time(NULL));
   /* creation de la fenetre - titre et tailles (pixels) */
   g3x_InitWindow(*argv,1024,1024);
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
   g3x_SetPerspective(40.,100.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.7*PI,-.75*PI,40.,(G3Xpoint){0.,0.,0.});
+  g3x_SetCameraSpheric(0.7*PI,-.75*PI,60.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
   g3x_SetDrawFunction(draw); // fonction de dessin       */

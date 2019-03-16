@@ -16,8 +16,7 @@
 #define NB_MASS_Y 10
 
 // total number of links 
-#define NB_LINK 453	
-
+#define NB_LINK 659	
 
 
 typedef struct _PM_ 
@@ -240,6 +239,7 @@ static void init(void)
   PMat *M;
   PMat *MSup;
   PMat *MInf;
+  PMat *M2Inf;
   
   int nbLink = 0;
   int i, j;
@@ -257,6 +257,7 @@ static void init(void)
     M=tabM[j];
     if(j > 0) MSup = tabM[j - 1];
     if(j < NB_MASS_Y - 1) MInf = tabM[j + 1];
+    if(j < NB_MASS_Y - 2) M2Inf = tabM[j + 2];
     
     for(i = 0; i < NB_MASS_X - 1; i++){
       InitRessort(L,M,M+1,k,90);
@@ -267,27 +268,42 @@ static void init(void)
 				L++;
 				nbLink++;
 			}
+			
 			if(i < NB_MASS_X - 1){
 				if(j > 0){
-					InitRessort(L, M, MSup + 1, k/70, 90);
+					InitRessort(L, M, MSup + 1, k/30, 90);
 					L++;
 					nbLink++;
 				}
 				if(j < NB_MASS_Y - 1){
-					InitRessort(L, M, MInf + 1, k/70, 90);
+					InitRessort(L, M, MInf + 1, k/30, 90);
 					L++;
 					nbLink++;
 				}
 			}
+			
 			if((i == NB_MASS_X - 2) && (j > 0)){
 				InitRessort(L, M + 1, MSup +1, k, 90);
 				L++;
 				nbLink++;
 			}
 			
+			if(i < NB_MASS_X - 2){
+				InitRessort(L, M, M + 2, k/30, 90);
+				L++;
+				nbLink++;
+			}
+			
+			if(j < NB_MASS_Y - 2){
+				InitRessort(L, M, M2Inf, k/30, 90);
+				L++;
+				nbLink++;
+			}
+		
 			//printf("%d\n", nbLink);
 			MSup++;
 			MInf++;
+			M2Inf++;
       M++;
     }               
   }  

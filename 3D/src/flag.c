@@ -12,12 +12,12 @@
 
 
 // number of masses in a line
-#define NB_MASS_X 13
+#define NB_MASS_X 20
 // number of horizontal masses
-#define NB_MASS_Y 10
+#define NB_MASS_Y 16
 
 // total number of links 
-#define NB_LINK 659	
+#define NB_LINK 1728
 
 typedef struct _PM_ 
 {
@@ -63,9 +63,9 @@ Wind *w;
 Wind *w2;
 
 /* simulation time step */
-double h = 0.0005;
+double h = 0.0006;
 double m = 1;
-double k = 1000000;
+double k = 1300000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -157,7 +157,7 @@ void algoWind(Wind *W)
 		double randZ = (rand() % 1000) + 700;
 		
 		InitWind(W, (G3Xvector){randX , 0., randZ}, 
-		(rand() % 70000) + 20000, (rand() % 70000) + 20000, (rand() % 300), (rand() % 200) + 400);
+		(rand() % 10000) + 20000, (rand() % 10000) + 20000, (rand() % 300) + 500, (rand() % 200) + 400);
 	}
 }
 
@@ -334,6 +334,7 @@ static void init(void)
   PMat *MInf; // mass directly below
   PMat *M2Inf; // mass below MInf
   Link *L = tabL; // link array
+  int nbLink = 0;
   
   w = malloc(sizeof(Wind));
   // w2 = malloc(sizeof(Wind));
@@ -363,46 +364,53 @@ static void init(void)
     
     for(i = 0; i < NB_MASS_X - 1; i++){
 			// horizontal springs
-      InitRessort(L,M,M+1,k / kCoeff,15);
+      InitRessort(L,M,M+1,k / kCoeff,90);
       k += 10.;
       L++;  
+      nbLink++;
       
       // vertical springs         
       if(j > 0){
 				InitRessort(L, M, MSup, k, 15);
 				L++;
+				nbLink++;
 			}
 			
 			// diagonal springs
 			if(i < NB_MASS_X - 1){
 				if(j > 0){
-					InitRessort(L, M, MSup + 1, k/300, 15);
+					InitRessort(L, M, MSup + 1, k/500, 15);
 					L++;
+					nbLink++;
 				}
 				if(j < NB_MASS_Y - 1){
-					InitRessort(L, M, MInf + 1, k/300, 15);
+					InitRessort(L, M, MInf + 1, k/500, 15);
 					L++;
+					nbLink++;
 				}
 			}
 			// last vertical springs
 			if((i == NB_MASS_X - 2) && (j > 0)){
 				InitRessort(L, M + 1, MSup +1, k, 15);
 				L++;
+				nbLink++;
 			}
 			
 			// horizontal tensor springs
 			if(i < NB_MASS_X - 2){
-				InitRessort(L, M, M + 2, k/30, 15);
+				InitRessort(L, M, M + 2, k/100, 15);
 				L++;
+				nbLink++;
 			}
 			
 			// vertical tensor springs
 			if(j < NB_MASS_Y - 2){
-				InitRessort(L, M, M2Inf, k/30, 15);
+				InitRessort(L, M, M2Inf, k/100, 15);
 				L++;
+				nbLink++;
 			}
 		
-			//printf("%d\n", nbLink);
+			printf("%d\n", nbLink);
 			MSup++;
 			MInf++;
 			M2Inf++;
@@ -468,9 +476,9 @@ int main(int argc, char **argv)
   /* creation de la fenetre - titre et tailles (pixels) */
   g3x_InitWindow(*argv,1024,1024);
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
-  g3x_SetPerspective(40.,100.,1.);
+  g3x_SetPerspective(40.,200.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.7*PI,-.75*PI,60.,(G3Xpoint){0.,0.,0.});
+  g3x_SetCameraSpheric(0.7*PI,-.75*PI,80.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
   g3x_SetDrawFunction(draw); // fonction de dessin       */

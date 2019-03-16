@@ -65,7 +65,7 @@ Wind *w2;
 /* simulation time step */
 double h = 0.0005;
 double m = 1;
-double k = 1500000;
+double k = 1000000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -153,11 +153,11 @@ void algoWind(Wind *W)
 	if((W->isOver == 1) && W->nbFrameOver != 0){
 		W->nbFrameOver--;
 	} else if(W->isOver == 1){
-		double randX = (rand() % 700) + 300;
-		double randZ = (rand() % 700) + 300;
+		double randX = (rand() % 1000) + 700;
+		double randZ = (rand() % 1000) + 700;
 		
 		InitWind(W, (G3Xvector){randX , 0., randZ}, 
-		(rand() % 50000) + 80000, (rand() % 100000) + 80000, (rand() % 100), (rand() % 300) + 200);
+		(rand() % 70000) + 20000, (rand() % 70000) + 20000, (rand() % 300), (rand() % 200) + 400);
 	}
 }
 

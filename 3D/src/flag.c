@@ -9,17 +9,14 @@
 #define FREIN 1
 #define EPSILON 0.002
 
-// only use in the case of a rectangular flag
 
-// NB_LINK_H_Y must ALWAYS be equal to NB_MASS_Y
-// NB_LINK must ALWAYS be equal to (NB_MASS_X - 1)
 // number of masses in a line
-#define NB_MASS_X 11
+#define NB_MASS_X 13
 // number of horizontal masses
-#define NB_MASS_Y 8
+#define NB_MASS_Y 10
 
-// number of links 
-#define NB_LINK 150	
+// total number of links 
+#define NB_LINK 453	
 
 
 
@@ -242,6 +239,9 @@ static void init(void)
 {
   PMat *M;
   PMat *MSup;
+  PMat *MInf;
+  
+  int nbLink = 0;
   int i, j;
   Link *L = tabL;
   for(j = 0; j < NB_MASS_Y; j++){
@@ -256,15 +256,38 @@ static void init(void)
 
     M=tabM[j];
     if(j > 0) MSup = tabM[j - 1];
+    if(j < NB_MASS_Y - 1) MInf = tabM[j + 1];
     
     for(i = 0; i < NB_MASS_X - 1; i++){
       InitRessort(L,M,M+1,k,90);
-      L++;              
+      L++;  
+      nbLink++;            
       if(j > 0){
 				InitRessort(L, M, MSup, k, 90);
-				MSup++;
 				L++;
+				nbLink++;
 			}
+			if(i < NB_MASS_X - 1){
+				if(j > 0){
+					InitRessort(L, M, MSup + 1, k/70, 90);
+					L++;
+					nbLink++;
+				}
+				if(j < NB_MASS_Y - 1){
+					InitRessort(L, M, MInf + 1, k/70, 90);
+					L++;
+					nbLink++;
+				}
+			}
+			if((i == NB_MASS_X - 2) && (j > 0)){
+				InitRessort(L, M + 1, MSup +1, k, 90);
+				L++;
+				nbLink++;
+			}
+			
+			//printf("%d\n", nbLink);
+			MSup++;
+			MInf++;
       M++;
     }               
   }  

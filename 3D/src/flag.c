@@ -63,9 +63,9 @@ Wind *w;
 Wind *w2;
 
 /* simulation time step */
-double h = 0.0004;
+double h = 0.0005;
 double m = 1;
-double k = 900000;
+double k = 1500000;
 
 
 /* limites de la zone reelle associee a la fenetre */
@@ -130,7 +130,7 @@ void algoWind(Wind *W)
 		} else {
 			// if X component is not minimal, decrement it
 			if(W->F[0] > 0)
-				W->F[0] -= W->incStep[0];
+				W->F[0] -= (W->incStep[0] * 2);
 			
 			// if X component is inferior to 0, set it to 0
 			if(W->F[0] < 0)
@@ -138,14 +138,14 @@ void algoWind(Wind *W)
 					
 			// if Z component is not minimal, decrement it
 			if(W->F[2] > 0)
-				W->F[2] -= W->incStep[2];
+				W->F[2] -= (W->incStep[2]* 2);
 				
 			// if Z component is inferior to 0, set it to 0
 			if(W->F[2] < 0)
 				W->F[0] = 0.;
 			
 			// if Z and X component are equal to 0, set isOver to 1
-			if((W->F[0] == 0) && (W->F[2] == 0))
+			if((W->F[0] <= 0) && (W->F[2] <= 0))
 				W->isOver = 1;	
 		}
 	}
@@ -153,11 +153,11 @@ void algoWind(Wind *W)
 	if((W->isOver == 1) && W->nbFrameOver != 0){
 		W->nbFrameOver--;
 	} else if(W->isOver == 1){
-		double randX = (rand() % 500) + 150;
-		double randZ = (rand() % 500) + 150;
+		double randX = (rand() % 700) + 300;
+		double randZ = (rand() % 700) + 300;
 		
 		InitWind(W, (G3Xvector){randX , 0., randZ}, 
-		(rand() % 50000) + 50000, (rand() % 100000) + 50000, (rand() % 300) + 50, (rand() % 500) + 200);
+		(rand() % 50000) + 80000, (rand() % 100000) + 80000, (rand() % 100), (rand() % 300) + 200);
 	}
 }
 
@@ -364,7 +364,7 @@ static void init(void)
     for(i = 0; i < NB_MASS_X - 1; i++){
 			// horizontal springs
       InitRessort(L,M,M+1,k / kCoeff,15);
-      k += 5.;
+      k += 10.;
       L++;  
       
       // vertical springs         
@@ -376,11 +376,11 @@ static void init(void)
 			// diagonal springs
 			if(i < NB_MASS_X - 1){
 				if(j > 0){
-					InitRessort(L, M, MSup + 1, k/150, 15);
+					InitRessort(L, M, MSup + 1, k/300, 15);
 					L++;
 				}
 				if(j < NB_MASS_Y - 1){
-					InitRessort(L, M, MInf + 1, k/150, 15);
+					InitRessort(L, M, MInf + 1, k/300, 15);
 					L++;
 				}
 			}

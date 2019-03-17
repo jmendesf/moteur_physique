@@ -12,12 +12,12 @@
 
 
 // number of masses in a line
-#define NB_MASS_X 30
+#define NB_MASS_X 45
 // number of horizontal masses
-#define NB_MASS_Y 25
+#define NB_MASS_Y 42
 
 // total number of links 
-#define NB_LINK 4204
+#define NB_LINK 10867
 
 typedef struct _PM_ 
 {
@@ -63,7 +63,7 @@ Wind *w;
 Wind *w2;
 
 /* simulation time step */
-double h = 0.0006;
+double h = 0.0005;
 double m = 1;
 double k = 1350000;
 
@@ -78,7 +78,7 @@ void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrame
   glColor3d(1,0,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.05,20,50);
+    glutSolidSphere(0.05,20,5);
   glPopMatrix();
 
  }
@@ -88,7 +88,7 @@ void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrame
   glColor3d(0,1,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.15,20,50);
+    glutSolidSphere(0.15,20,5);
   glPopMatrix();
  }
 
@@ -103,7 +103,6 @@ void draw_ressort(Link * L)
 
   glEnable(GL_LIGHTING);
 }
-
 
 void algoWind(Wind *W)
 {
@@ -153,11 +152,11 @@ void algoWind(Wind *W)
 	if((W->isOver == 1) && W->nbFrameOver != 0){
 		W->nbFrameOver--;
 	} else if(W->isOver == 1){
-		double randX = (rand() % 1000) + 700;
-		double randZ = (rand() % 1000) + 700;
+		double randX = (rand() % 500) + 300;
+		double randZ = (rand() % 500) + 300;
 		
 		InitWind(W, (G3Xvector){randX , 0., randZ}, 
-		(rand() % 10000) + 20000, (rand() % 10000) + 20000, (rand() % 300) + 500, (rand() % 200) + 400);
+		(rand() % 10000) + 10000, (rand() % 10000) + 10000, (rand() % 300) + 600, (rand() % 200) + 400);
 	}
 }
 
@@ -365,13 +364,13 @@ static void init(void)
     for(i = 0; i < NB_MASS_X - 1; i++){
 			// horizontal springs
       InitRessort(L,M,M+1,k / kCoeff,90);
-      k += 10.;
+      k += 25.;
       L++;  
       nbLink++;
       
       // vertical springs         
       if(j > 0){
-				InitRessort(L, M, MSup, k, 15);
+				InitRessort(L, M, MSup, k / kCoeff, 15);
 				L++;
 				nbLink++;
 			}
@@ -410,7 +409,7 @@ static void init(void)
 				nbLink++;
 			}
 		
-			printf("%d\n", nbLink);
+			// printf("%d\n", nbLink);
 			MSup++;
 			MInf++;
 			M2Inf++;
@@ -424,7 +423,7 @@ static void draw()
 { 
   int i, j;
   Link *L = tabL;
-
+	/*
   for(j = 0; j < NB_MASS_Y; j++){
 		PMat *M = tabM[j];
 					
@@ -432,7 +431,7 @@ static void draw()
 			M->draw(M);
 			M++;
 		}
-	}     
+	}  */   
 	
 	for(i = 0; i < NB_LINK; i++){
 		L->draw(L);
@@ -451,13 +450,14 @@ static void anim(void)
 	}  
 	w->algoWind(w);
 	// w->algoWind(w2);
-	printf("x : %f, z : %f, nbFrameMax : %d, nbFrameOver : %d \n", w->F[0], w->F[2], w->nbFrameMax, w->nbFrameOver);
+	// printf("x : %f, z : %f, nbFrameMax : %d, nbFrameOver : %d \n", w->F[0], w->F[2], w->nbFrameMax, w->nbFrameOver);
 	
 	for(j = 0; j < NB_MASS_Y; j++){
 		PMat *M = tabM[j];
 		for(i = 0; i < NB_MASS_X; i++){
 			M->F[0] += w->F[0];
 			M->F[2] += w->F[2];
+			
 			// M->F[0] += w2->F[0];
 			// M->F[2] += w2->F[2];
 			M->setup(M,h);
@@ -476,9 +476,9 @@ int main(int argc, char **argv)
   /* creation de la fenetre - titre et tailles (pixels) */
   g3x_InitWindow(*argv,1024,1024);
   /* param. géométrique de la caméra. cf. gluLookAt(...) */
-  g3x_SetPerspective(40.,200.,1.);
+  g3x_SetPerspective(40.,500.,1.);
   /* position, orientation de la caméra */
-  g3x_SetCameraSpheric(0.7*PI,-.75*PI,80.,(G3Xpoint){0.,0.,0.});
+  g3x_SetCameraSpheric(0.7*PI,-.75*PI,120.,(G3Xpoint){0.,0.,0.});
     
   g3x_SetInitFunction(init); /* fonction d'initialisation */
   g3x_SetDrawFunction(draw); // fonction de dessin       */

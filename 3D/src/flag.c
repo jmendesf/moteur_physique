@@ -78,7 +78,7 @@ void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrame
   glColor3d(1,0,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.05,20,50);
+    glutSolidSphere(0.05,20,5);
   glPopMatrix();
 
  }
@@ -88,7 +88,7 @@ void InitWind(Wind * W, G3Xvector incStep, double maxX, double maxZ, int nbFrame
   glColor3d(0,1,0); 
   glPushMatrix();
     glTranslated(M->P[0], M->P[1], M->P[2]);
-    glutSolidSphere(0.15,20,50);
+    glutSolidSphere(0.15,20,10);
   glPopMatrix();
  }
 
